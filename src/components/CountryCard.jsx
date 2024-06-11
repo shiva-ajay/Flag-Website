@@ -1,23 +1,43 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+// import countriesData from '../countriesData'
+import CountryCard from './CountryCard'
+import CountriesListShimmer from './CountriesListShimmer'
 
-export default function CountryCard({ name, flag, population, region, capital }) {
+export default function CountriesList({ query }) {
+  const [countriesData, setCountriesData] = useState([])
+
+  useEffect(() => {
+    fetch('https://restcountries.com/v3.1/all')
+      .then((res) => res.json())
+      .then((data) => {
+        setCountriesData(data)
+      })
+  }, [])
+
+  if (!countriesData.length) {
+    return <CountriesListShimmer />
+  }
+
   return (
-    <Link className="country-card" to={`/${name}`}>
-      <img src={flag} alt={name + ' Flag'} />
-      <div className="card-text">
-        <h3 className="card-title">{name}</h3>
-        <p>
-          <b>Population: </b>
-          {population.toLocaleString('en-IN')}
-        </p>
-        <p>
-          <b>Region: </b>{region}
-        </p>
-        <p>
-          <b>Capital: </b>{capital}
-        </p>
+    <>
+      <div className="countries-container">
+        {countriesData
+          .filter((country) =>
+            country.name.common.toLowerCase().includes(query)
+          )
+          .map((country) => {
+            return (
+              <CountryCard
+                key={country.name.common}
+                name={country.name.common}
+                flag={country.flags.svg}
+                population={country.population}
+                region={country.region}
+                capital={country.capital?.[0]}
+              />
+            )
+          })}
       </div>
-    </Link>
+    </>
   )
 }
